@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toggleLike } from '@/lib/actions/drops'
 
 export function LikeButton({ id, count: initialCount, liked: initialLiked }: { id: number; count: number; liked: boolean }) {
   const [liked, setLiked] = useState(initialLiked)
@@ -9,18 +10,11 @@ export function LikeButton({ id, count: initialCount, liked: initialLiked }: { i
   const [error, setError] = useState('')
 
   async function toggle() {
-    const token = localStorage.getItem('token')
-    if (!token) return setError('Connecte-toi pour aimer un drop.')
-
     setPending(true)
     setError('')
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/drops/${id}/like`, {
-        method: liked ? 'DELETE' : 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Impossible de modifier le like. Réessaie.')
-      const result: { liked: boolean; likesCount: number } = await response.json()
+      const result = await toggleLike(id, liked)
+      if ('error' in result) return setError(result.error)
       setLiked(result.liked)
       setCount(result.likesCount)
     } catch (err) {

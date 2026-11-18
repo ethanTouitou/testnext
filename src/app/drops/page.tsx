@@ -1,4 +1,7 @@
+import { Suspense } from 'react'
 import { apiGet } from '@/lib/api/client'
+import { getSession } from '@/lib/session'
+import { logout } from '@/lib/actions/auth'
 import type { Category, DropPage } from '@/lib/api/types'
 import { Categories } from './categories'
 import { SearchBox } from './search-box'
@@ -6,7 +9,13 @@ import { LikeButton } from './like-button'
 
 type Props = { searchParams: Promise<{ q?: string; category?: string; sort?: string; page?: string }> }
 
-export default async function DropsPage({ searchParams }: Props) {
+export default function DropsPage(props: Props) {
+  return <Suspense fallback={<main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">Chargement des drops…</main>}>
+    <DropsContent {...props} />
+  </Suspense>
+}
+
+async function DropsContent({ searchParams }: Props) {
   const params = await searchParams
   const query = new URLSearchParams()
   if (params.q) query.set('q', params.q)
@@ -14,14 +23,22 @@ export default async function DropsPage({ searchParams }: Props) {
   query.set('sort', params.sort === 'popular' ? 'popular' : 'recent')
   query.set('page', params.page ?? '1')
   query.set('pageSize', '20')
+  const token = await getSession()
   const [result, categories] = await Promise.all([
-    apiGet<DropPage>(`/drops?${query}`),
-    apiGet<Category[]>('/categories'),
+    apiGet<DropPage>(`/drops?${query}`, token),
+    apiGet<Category[]>('/categories', token),
   ])
 
   return <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">
-    <h1 className="mb-2 text-3xl font-bold">Les drops</h1>
-    <p className="mb-7 text-zinc-600">Découvre les messages et recommandations de la communauté.</p>
+    <header className="mb-7 flex items-start justify-between gap-4">
+      <div>
+        <h1 className="mb-2 text-3xl font-bold">Les drops</h1>
+        <p className="text-zinc-600">Découvre les messages et recommandations de la communauté.</p>
+      </div>
+      <form action={logout}>
+        <button className="rounded-md border px-3 py-2 text-sm">Se déconnecter</button>
+      </form>
+    </header>
     <div className="mb-5"><SearchBox query={params.q} /></div>
     <Categories categories={categories} selected={params.category} query={params.q} sort={params.sort} />
     <form className="my-6 flex items-center gap-3">
@@ -37,7 +54,7 @@ export default async function DropsPage({ searchParams }: Props) {
     {result.items.length ? <div className="grid gap-4 sm:grid-cols-2">
       {result.items.map(drop => <article key={drop.id} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3"><span className="rounded-full bg-zinc-100 px-3 py-1 text-xs capitalize">{categories.find(c => c.id === drop.category)?.label ?? drop.category}</span><time className="text-xs text-zinc-500">{new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(drop.createdAt))}</time></div>
-        <h2 className="mb-2 text-lg font-semibold">{drop.title}</h2>
+        <h2 className="mb-2 text-lg font-semibold"><a href={`/drops/${drop.id}`} className="hover:underline">{drop.title}</a></h2>
         {drop.content && <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-700">{drop.content}</p>}
         {drop.imageUrl && <img src={drop.imageUrl} alt="" className="mt-4 max-h-72 w-full rounded-lg object-cover" />}
         <div className="mt-5 flex items-center justify-between border-t pt-4"><span className="text-sm text-zinc-500">Par {drop.author.displayName}</span><LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} /></div>
