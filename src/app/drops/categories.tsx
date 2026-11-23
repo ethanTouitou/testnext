@@ -1,11 +1,13 @@
 import type { Category } from '@/lib/api/types'
 
+// Affiche les catégories et construit les liens en gardant les autres filtres actifs.
 export function Categories({ categories, selected, query = '', sort = 'recent' }: {
   categories: Category[]
   selected?: string
   query?: string
   sort?: string
 }) {
+  // Crée l'URL correspondant à la catégorie sélectionnée.
   function href(category: string) {
     const params = new URLSearchParams()
     if (query) params.set('q', query)

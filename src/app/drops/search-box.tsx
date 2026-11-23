@@ -1,3 +1,4 @@
+// Formulaire de recherche qui transmet le texte dans le paramètre d'URL « q ».
 export function SearchBox({ query = '' }: { query?: string }) {
   return <form action="/drops" className="flex gap-2">
     <input name="q" defaultValue={query} placeholder="Rechercher un drop…" aria-label="Rechercher un drop"
