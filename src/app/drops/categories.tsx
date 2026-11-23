@@ -19,7 +19,7 @@ export function Categories({ categories, selected, query = '', sort = 'recent' }
   return <nav className="flex flex-wrap gap-2" aria-label="Catégories">
     {[{ id: '', label: 'Tout' }, ...categories].map(category => <a
       key={category.id || 'all'} href={href(category.id)}
-      className={`rounded-full px-4 py-2 text-sm ${selected === category.id ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-700'}`}>
+      className={`rounded-full px-4 py-2 text-sm transition ${(selected ?? '') === category.id ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'border border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>
       {category.label}
     </a>)}
   </nav>

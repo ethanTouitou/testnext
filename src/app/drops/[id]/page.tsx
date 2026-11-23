@@ -1,11 +1,14 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apiGet, ApiError } from '@/lib/api/client'
 import { getSession } from '@/lib/session'
 import type { Category, CommentPage, Drop } from '@/lib/api/types'
 import { Badge } from '@/components/ui/badge'
+import { PresenceWidget } from '@/components/presence-widget'
+import { LiveCommentCount } from '@/components/live-comment-count'
+import { LiveComments } from './live-comments'
 import { LikeButton } from '../like-button'
-import { CommentForm } from './comment-form'
 import { EditDropForm } from './edit-drop-form'
 
 type Props = {
@@ -15,7 +18,7 @@ type Props = {
 
 // Affiche un état de chargement pendant la récupération du post et de ses commentaires.
 export default function DropPage(props: Props) {
-  return <Suspense fallback={<main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">Chargement du drop…</main>}>
+  return <Suspense fallback={<main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 text-muted-foreground">Chargement du drop…</main>}>
     <DropDetails {...props} />
   </Suspense>
 }
@@ -44,47 +47,33 @@ async function DropDetails({ params, searchParams }: Props) {
   const category = categories.find(item => item.id === drop.category)?.label ?? drop.category
 
   return <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">
-    <a href="/drops" className="text-sm text-zinc-600 hover:text-zinc-900">← Retour aux drops</a>
-    <article className="mt-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+    <Link href="/drops" className="text-sm text-muted-foreground transition hover:text-primary">← Retour aux drops</Link>
+    <article className="mt-5 rounded-2xl border border-white/10 bg-card/80 p-6 shadow-xl shadow-black/15 sm:p-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <Badge>{category}</Badge>
-        <time className="text-sm text-zinc-500">
+        <time className="text-sm text-muted-foreground">
           {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(drop.createdAt))}
         </time>
       </div>
       <h1 className="mb-3 text-3xl font-bold">{drop.title}</h1>
-      <p className="mb-6 text-sm text-zinc-500">Par {drop.author.displayName}</p>
+      <p className="mb-6 text-sm text-muted-foreground">Par {drop.author.displayName}</p>
+      <PresenceWidget key={drop.id} dropId={drop.id} />
       {drop.isMine && <EditDropForm drop={drop} />}
       {drop.locked && !drop.openedByMe ? (
-        <p className="rounded-lg bg-zinc-100 p-4 text-zinc-600">Ce drop est verrouillé.</p>
+        <p className="rounded-xl border border-border bg-muted p-4 text-muted-foreground">Ce drop est verrouillé.</p>
       ) : (
         <>
-          {drop.content && <p className="whitespace-pre-wrap leading-7 text-zinc-700">{drop.content}</p>}
+          {drop.content && <p className="whitespace-pre-wrap leading-7 text-foreground/90">{drop.content}</p>}
           {drop.imageUrl && <img src={drop.imageUrl} alt="" className="mt-5 h-full w-full rounded-lg object-cover" />}
         </>
       )}
-      <div className="mt-6 flex items-center justify-between border-t pt-5">
-        <a href="#commentaires" className="text-sm text-zinc-500 hover:underline">{drop.commentsCount} commentaire{drop.commentsCount === 1 ? '' : 's'}</a>
+      <div className="mt-6 flex items-center justify-between border-t border-border pt-5">
+        <a href="#commentaires" className="text-sm text-muted-foreground transition hover:text-primary">
+          <LiveCommentCount key={drop.id} dropId={drop.id} initialCount={drop.commentsCount} knownIds={comments.items.map(comment => comment.id)} />
+        </a>
         <LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} />
       </div>
     </article>
-    <section id="commentaires" className="mt-8 scroll-mt-6">
-      <h2 className="mb-4 text-xl font-semibold">Commentaires ({comments.total})</h2>
-      <CommentForm dropId={drop.id} />
-      {comments.items.length ? <div className="space-y-3">
-        {comments.items.map(comment => <article key={comment.id} className="rounded-lg border border-zinc-200 bg-white p-4">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-sm font-medium">{comment.author.displayName}</span>
-            <time className="text-xs text-zinc-500">{new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(comment.createdAt))}</time>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-700">{comment.content}</p>
-        </article>)}
-      </div> : <p className="rounded-lg border border-dashed p-5 text-sm text-zinc-500">Aucun commentaire pour le moment.</p>}
-      {comments.totalPages > 1 && <nav className="mt-5 flex items-center justify-center gap-4" aria-label="Pages de commentaires">
-        {comments.page > 1 && <a className="rounded-md border px-3 py-2 text-sm" href={`?commentsPage=${comments.page - 1}#commentaires`}>Précédents</a>}
-        <span className="text-sm text-zinc-500">Page {comments.page} / {comments.totalPages}</span>
-        {comments.page < comments.totalPages && <a className="rounded-md border px-3 py-2 text-sm" href={`?commentsPage=${comments.page + 1}#commentaires`}>Suivants</a>}
-      </nav>}
-    </section>
+    <LiveComments key={`${comments.page}:${comments.total}:${comments.items.map(comment => comment.id).join(',')}`} dropId={drop.id} initial={comments} />
   </main>
 }

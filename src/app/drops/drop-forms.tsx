@@ -37,18 +37,18 @@ export function CreateDropForm() {
     )
   }
 
-  return <form action={action} className="mb-8 grid gap-3 rounded-xl border border-zinc-200 p-5">
+  return <form action={action} className="mb-8 grid gap-3 rounded-2xl border border-white/10 bg-card/70 p-5 shadow-lg shadow-black/10 sm:p-6">
     <h2 className="text-lg font-semibold">Créer un drop</h2>
-    <input name="title" required minLength={3} placeholder="Titre" className="rounded-md border px-3 py-2" />
-    <textarea name="content" required placeholder="Ton message" className="min-h-24 rounded-md border px-3 py-2" />
-    <select name="category" defaultValue="note" className="rounded-md border bg-white px-3 py-2">
+    <input name="title" required minLength={3} placeholder="Titre" className="rounded-xl border border-input px-4 py-3" />
+    <textarea name="content" required placeholder="Ton message" className="min-h-24 rounded-xl border border-input px-4 py-3" />
+    <select name="category" defaultValue="note" className="rounded-xl border border-input px-4 py-3">
       <option value="note">Un mot</option>
       <option value="photo">Une photo</option>
       <option value="tip">Une recommandation</option>
       <option value="riddle">Une énigme</option>
     </select>
-    <input name="imageUrl" type="url" placeholder="URL de l’image (obligatoire pour une photo)" className="rounded-md border px-3 py-2" />
-    <button type="button" onClick={getCurrentLocation} disabled={locating} className="w-fit rounded-md border px-3 py-2 text-sm disabled:opacity-50">
+    <input name="imageUrl" type="url" placeholder="URL de l’image (obligatoire pour une photo)" className="rounded-xl border border-input px-4 py-3" />
+    <button type="button" onClick={getCurrentLocation} disabled={locating} className="w-fit rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-foreground disabled:opacity-50">
       {locating ? 'Localisation…' : 'Utiliser ma position actuelle'}
     </button>
     {locationError && <p role="alert" className="text-sm text-red-600">{locationError}</p>}
@@ -56,10 +56,10 @@ export function CreateDropForm() {
       <input name="lat" type="number" step="any" required value={latitude} onChange={event => setLatitude(event.target.value)} placeholder="Latitude" className="rounded-md border px-3 py-2" />
       <input name="lng" type="number" step="any" required value={longitude} onChange={event => setLongitude(event.target.value)} placeholder="Longitude" className="rounded-md border px-3 py-2" />
     </div>
-    <p className="text-xs text-zinc-500">Indique où le drop doit apparaître sur la carte.</p>
+    <p className="text-xs text-muted-foreground">Indique où le drop doit apparaître sur la carte.</p>
     {state.error && <p role="alert" className="text-sm text-red-600">{state.error}</p>}
     {state.success && <p role="status" className="text-sm text-green-700">{state.success}</p>}
-    <button disabled={pending} className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-white disabled:opacity-50">
+    <button disabled={pending} className="w-fit rounded-xl bg-primary px-5 py-2.5 font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50">
       {pending ? 'Création…' : 'Créer le drop'}
     </button>
   </form>
@@ -73,7 +73,7 @@ export function DeleteDropButton({ id }: { id: number }) {
   return <form action={action} onSubmit={event => {
     if (!window.confirm('Supprimer ce drop ?')) event.preventDefault()
   }}>
-    <button disabled={pending} className="text-sm text-red-600 hover:underline disabled:opacity-50">
+    <button disabled={pending} className="text-sm text-red-400 hover:underline disabled:opacity-50">
       {pending ? 'Suppression…' : 'Supprimer'}
     </button>
     {state.error && <p role="alert" className="mt-1 text-xs text-red-600">{state.error}</p>}
