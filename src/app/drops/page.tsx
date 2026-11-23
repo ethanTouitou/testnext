@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { apiGet } from '@/lib/api/client'
+import { requireSession } from '@/lib/session'
 import type { Category, DropPage } from '@/lib/api/types'
 import { Categories } from './categories'
 import { SearchBox } from './search-box'
@@ -6,7 +8,13 @@ import { LikeButton } from './like-button'
 
 type Props = { searchParams: Promise<{ q?: string; category?: string; sort?: string; page?: string }> }
 
-export default async function DropsPage({ searchParams }: Props) {
+export default function DropsPage(props: Props) {
+  return <Suspense fallback={<main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">Chargement des drops…</main>}>
+    <DropsContent {...props} />
+  </Suspense>
+}
+
+async function DropsContent({ searchParams }: Props) {
   const params = await searchParams
   const query = new URLSearchParams()
   if (params.q) query.set('q', params.q)
@@ -14,9 +22,10 @@ export default async function DropsPage({ searchParams }: Props) {
   query.set('sort', params.sort === 'popular' ? 'popular' : 'recent')
   query.set('page', params.page ?? '1')
   query.set('pageSize', '20')
+  const token = await requireSession()
   const [result, categories] = await Promise.all([
-    apiGet<DropPage>(`/drops?${query}`),
-    apiGet<Category[]>('/categories'),
+    apiGet<DropPage>(`/drops?${query}`, token),
+    apiGet<Category[]>('/categories', token),
   ])
 
   return <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">

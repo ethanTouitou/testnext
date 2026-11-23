@@ -5,3 +5,5 @@ type S = components['schemas']
 export type Drop = S['Drop'];
 export type DropPage = S['DropPage'];
 export type Category = S['Category'];
+export type AuthResponse = S['AuthResponse'];
+export type LikeState = S['LikeState'];

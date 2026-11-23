@@ -25,4 +25,28 @@ export async function apiGet<T>(path: string, token?: string) {
     }
 }
 
+export async function apiPost<T>(path: string, data: T, token?: string) {
+    const baseUrl = process.env.API_URL;
+    if (!baseUrl) throw new Error('La variable API_URL est manquante.');
+
+    return fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+    });
+}
+
+export async function apiDelete(path: string, token: string) {
+    const baseUrl = process.env.API_URL;
+    if (!baseUrl) throw new Error('La variable API_URL est manquante.');
+
+    return fetch(`${baseUrl}${path}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 
