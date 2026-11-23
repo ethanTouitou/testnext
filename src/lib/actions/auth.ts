@@ -7,6 +7,7 @@ import type { AuthResponse } from '@/lib/api/types';
 
 export type LoginState = { error?: string };
 
+// Vérifie les identifiants auprès de l'API, crée la session et redirige.
 export async function login(_prev: LoginState, from: FormData): Promise<LoginState> {
     const login = from.get('login');
     const password = from.get('password');
@@ -28,6 +29,7 @@ export async function login(_prev: LoginState, from: FormData): Promise<LoginSta
     redirect('/');
 }
 
+// Efface le cookie de session et renvoie vers la page de connexion.
 export async function logout() {
     (await cookies()).delete('session')
     redirect('/login')

@@ -6,15 +6,18 @@ import type { Category, DropPage } from '@/lib/api/types'
 import { Categories } from './categories'
 import { SearchBox } from './search-box'
 import { LikeButton } from './like-button'
+import { CreateDropForm, DeleteDropButton } from './drop-forms'
 
 type Props = { searchParams: Promise<{ q?: string; category?: string; sort?: string; page?: string }> }
 
+// Encadre le contenu chargé depuis l'API avec un affichage pendant le chargement.
 export default function DropsPage(props: Props) {
   return <Suspense fallback={<main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">Chargement des drops…</main>}>
     <DropsContent {...props} />
   </Suspense>
 }
 
+// Lit les filtres de l'URL, récupère les drops et affiche la liste paginée.
 async function DropsContent({ searchParams }: Props) {
   const params = await searchParams
   const query = new URLSearchParams()
@@ -40,6 +43,7 @@ async function DropsContent({ searchParams }: Props) {
       </form>
     </header>
     <div className="mb-5"><SearchBox query={params.q} /></div>
+    <CreateDropForm />
     <Categories categories={categories} selected={params.category} query={params.q} sort={params.sort} />
     <form className="my-6 flex items-center gap-3">
       <label htmlFor="sort" className="text-sm text-zinc-600">Trier par</label>
@@ -57,7 +61,16 @@ async function DropsContent({ searchParams }: Props) {
         <h2 className="mb-2 text-lg font-semibold"><a href={`/drops/${drop.id}`} className="hover:underline">{drop.title}</a></h2>
         {drop.content && <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-700">{drop.content}</p>}
         {drop.imageUrl && <img src={drop.imageUrl} alt="" className="mt-4 max-h-72 w-full rounded-lg object-cover" />}
-        <div className="mt-5 flex items-center justify-between border-t pt-4"><span className="text-sm text-zinc-500">Par {drop.author.displayName}</span><LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} /></div>
+        <div className="mt-5 flex items-center justify-between border-t pt-4">
+          <span className="text-sm text-zinc-500">Par {drop.author.displayName}</span>
+          <div className="flex items-center gap-3">
+            <a href={`/drops/${drop.id}#commentaires`} className="text-sm text-zinc-500 hover:underline">
+              {drop.commentsCount} 💬
+            </a>
+            {drop.isMine && <DeleteDropButton id={drop.id} />}
+            <LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} />
+          </div>
+        </div>
       </article>)}
     </div> : <p className="rounded-xl border border-dashed p-10 text-center text-zinc-500">Aucun drop ne correspond à ta recherche.</p>}
     {result.totalPages > 1 && <nav className="mt-8 flex justify-center gap-4" aria-label="Pagination">

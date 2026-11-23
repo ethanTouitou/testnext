@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { toggleLike } from '@/lib/actions/drops'
 
+// Affiche l'état du like et le met à jour après la réponse de l'action serveur.
 export function LikeButton({ id, count: initialCount, liked: initialLiked }: { id: number; count: number; liked: boolean }) {
   const [liked, setLiked] = useState(initialLiked)
   const [count, setCount] = useState(initialCount)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
 
+  // Demande au serveur d'ajouter ou de retirer le like du post.
   async function toggle() {
     setPending(true)
     setError('')
