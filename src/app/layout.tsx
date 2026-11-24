@@ -7,6 +7,7 @@ import { OnlinePresence } from "@/components/online-presence";
 import { RealtimeNotifications } from "@/components/realtime-notifications";
 import { Toaster as SonnerToaster } from "sonner";
 import { getSession } from "@/lib/session";
+import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 const geistSans = Geist({

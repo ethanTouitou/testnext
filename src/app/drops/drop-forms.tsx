@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { useState } from 'react'
+import { LocationPickerMap } from '@/components/map/location-picker-map'
 import { createDrop, deleteDrop } from '@/lib/actions/drops'
 
 // Formulaire de création, avec récupération facultative des coordonnées GPS.
@@ -11,6 +12,9 @@ export function CreateDropForm() {
   const [longitude, setLongitude] = useState('')
   const [locating, setLocating] = useState(false)
   const [locationError, setLocationError] = useState('')
+  const mapPosition = latitude && longitude && Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude))
+    ? { lat: Number(latitude), lng: Number(longitude) }
+    : null
 
   // Récupère la position du navigateur et remplit latitude et longitude.
   function getCurrentLocation() {
@@ -52,9 +56,17 @@ export function CreateDropForm() {
       {locating ? 'Localisation…' : 'Utiliser ma position actuelle'}
     </button>
     {locationError && <p role="alert" className="text-sm text-red-600">{locationError}</p>}
+    <p className="text-sm text-muted-foreground">Clique sur la carte pour choisir l’emplacement, puis déplace le repère si besoin.</p>
+    <LocationPickerMap
+      position={mapPosition}
+      onPositionChange={position => {
+        setLatitude(String(position.lat))
+        setLongitude(String(position.lng))
+      }}
+    />
     <div className="grid gap-3 sm:grid-cols-2">
-      <input name="lat" type="number" step="any" required value={latitude} onChange={event => setLatitude(event.target.value)} placeholder="Latitude" className="rounded-md border px-3 py-2" />
-      <input name="lng" type="number" step="any" required value={longitude} onChange={event => setLongitude(event.target.value)} placeholder="Longitude" className="rounded-md border px-3 py-2" />
+      <input name="lat" type="number" min="-90" max="90" step="any" required value={latitude} onChange={event => setLatitude(event.target.value)} placeholder="Latitude" className="rounded-md border px-3 py-2" />
+      <input name="lng" type="number" min="-180" max="180" step="any" required value={longitude} onChange={event => setLongitude(event.target.value)} placeholder="Longitude" className="rounded-md border px-3 py-2" />
     </div>
     <p className="text-xs text-muted-foreground">Indique où le drop doit apparaître sur la carte.</p>
     {state.error && <p role="alert" className="text-sm text-red-600">{state.error}</p>}

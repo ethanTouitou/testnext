@@ -7,6 +7,7 @@ import { getCategories } from '@/lib/data/categories'
 import type { CommentPage, Drop } from '@/lib/api/types'
 import { Badge } from '@/components/ui/badge'
 import { PresenceWidget } from '@/components/presence-widget'
+import { DropsMap } from '@/components/map/drops-map'
 import { LiveCommentCount } from '@/components/live-comment-count'
 import { LiveComments } from './live-comments'
 import { LikeButton } from '../like-button'
@@ -73,6 +74,12 @@ async function DropDetails({ params, searchParams }: Props) {
           {drop.imageUrl && <Image src={drop.imageUrl} alt="" width={1200} height={800} unoptimized loading="lazy" sizes="(max-width: 768px) 100vw, 720px" className="mt-5 h-auto max-h-[70vh] w-full rounded-lg object-cover" />}
         </>
       )}
+      <section className="mt-6" aria-labelledby="drop-location-title">
+        <h2 id="drop-location-title" className="mb-3 text-lg font-semibold">Position du drop</h2>
+        <div className="h-72 overflow-hidden rounded-2xl border border-white/10">
+          <DropsMap drops={[drop]} activeId={drop.id} />
+        </div>
+      </section>
       <div className="mt-6 flex items-center justify-between border-t border-border pt-5">
         <a href="#commentaires" className="text-sm text-muted-foreground transition hover:text-primary">
           <LiveCommentCount key={drop.id} dropId={drop.id} initialCount={drop.commentsCount} knownIds={comments.items.map(comment => comment.id)} />

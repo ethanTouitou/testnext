@@ -36,14 +36,15 @@
 - Pour un élément partagé comme un bouton ou un badge, modifie ou ajoute un composant dans `src/components/ui/`.
 - Garde la logique API, session et temps réel dans `src/lib/` ou les actions serveur ; un changement de style ne doit pas modifier ces comportements.
 
-## Carte Leaflet (à venir)
+## Carte Leaflet
 
 - Leaflet est installé en version stable **1.9.4**. N'installe pas Leaflet 2 bêta.
 - La carte doit être un composant client chargé sans rendu serveur, car Leaflet utilise `window` et le DOM. Crée la carte une fois, puis appelle `map.remove()` au nettoyage.
-- La carte et la liste doivent partager un seul `activeId` dans leur parent : survol ou focus d'une carte met son marqueur en évidence ; clic sur un marqueur sélectionne et fait défiler jusqu'à la carte correspondante.
+- La liste, la page détail et les formulaires réutilisent les composants dans `src/components/map/`. La liste et la carte partagent `activeId` : survol ou focus d'une carte met son marqueur en évidence et recentre la carte ; clic sur un marqueur sélectionne et fait défiler jusqu'à la carte correspondante.
+- À la création, un clic sur la carte place le repère. À la modification, le repère peut être déplacé ; les coordonnées restent aussi éditables dans les champs Latitude/Longitude. Envoie toujours `lat` et `lng` ensemble au `PATCH`.
 - Leaflet attend les coordonnées `[latitude, longitude]`. Vérifie l'ordre si tu manipules du GeoJSON ou un `bbox`, qui place souvent la longitude en premier.
 - Affiche l'attribution des tuiles et respecte la politique d'utilisation du fournisseur choisi.
-- À ce jour, le paquet est installé, mais la carte, son formulaire et son intégration au détail et à la modification des drops ne sont pas encore implémentés.
+- Le front-end ne limite pas la carte à une zone géographique. Le contrat de l'API Railway impose actuellement une limite de 3 km autour du département MMI : elle doit être changée côté API pour que les créations et modifications partout dans le monde soient acceptées.
 
 ## Web Worker
 

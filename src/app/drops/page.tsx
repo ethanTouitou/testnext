@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { ApiError, apiGet } from '@/lib/api/client'
 import { requireSession } from '@/lib/session'
@@ -8,13 +7,11 @@ import { logout } from '@/lib/actions/auth'
 import type { DropPage } from '@/lib/api/types'
 import { Categories } from './categories'
 import { SearchBox } from './search-box'
-import { LikeButton } from './like-button'
-import { CreateDropForm, DeleteDropButton } from './drop-forms'
+import { CreateDropForm } from './drop-forms'
+import { DropsExplorer } from './drops-explorer'
 import { RealtimeDropRefresh } from '@/components/realtime-drop-refresh'
-import { LiveCommentCount } from '@/components/live-comment-count'
 
 type Props = { searchParams: Promise<{ q?: string; category?: string; sort?: string; page?: string }> }
-const dropDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' })
 
 // Le fichier loading.tsx affiche le squelette pendant le chargement serveur.
 export default function DropsPage(props: Props) {
@@ -63,24 +60,9 @@ async function DropsContent({ searchParams }: Props) {
       <button className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Appliquer</button>
     </form>
     <p className="mb-4 text-sm text-muted-foreground">{result.total} drop{result.total === 1 ? '' : 's'}</p>
-    {result.items.length ? <div className="grid gap-4 sm:grid-cols-2">
-      {result.items.map(drop => <article key={drop.id} className="rounded-2xl border border-white/10 bg-card/80 p-5 shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:border-primary/30">
-        <div className="mb-3 flex items-center justify-between gap-3"><span className="rounded-full bg-primary/15 px-3 py-1 text-xs capitalize text-primary">{categories.find(c => c.id === drop.category)?.label ?? drop.category}</span><time className="text-xs text-muted-foreground">{dropDate.format(new Date(drop.createdAt))}</time></div>
-        <h2 className="mb-2 text-lg font-semibold"><Link href={`/drops/${drop.id}`} className="transition hover:text-primary">{drop.title}</Link></h2>
-        {drop.content && <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{drop.content}</p>}
-        {drop.imageUrl && <Image src={drop.imageUrl} alt="" width={1200} height={800} unoptimized loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" className="mt-4 h-auto max-h-72 w-full rounded-lg object-cover" />}
-        <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-          <span className="text-sm text-muted-foreground">Par {drop.author.displayName}</span>
-          <div className="flex items-center gap-3">
-            <Link href={`/drops/${drop.id}#commentaires`} className="text-sm text-muted-foreground transition hover:text-primary">
-              <LiveCommentCount key={drop.id} dropId={drop.id} initialCount={drop.commentsCount} /> 💬
-            </Link>
-            {drop.isMine && <DeleteDropButton id={drop.id} />}
-            <LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} />
-          </div>
-        </div>
-      </article>)}
-    </div> : <p className="rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center text-muted-foreground">Aucun drop ne correspond à ta recherche.</p>}
+    {result.items.length
+      ? <DropsExplorer drops={result.items} categories={categories} />
+      : <p className="rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center text-muted-foreground">Aucun drop ne correspond à ta recherche.</p>}
     {result.totalPages > 1 && <nav className="mt-8 flex justify-center gap-4" aria-label="Pagination">
       {result.page > 1 && <Link className="rounded-md border px-4 py-2" href={`?${new URLSearchParams(Object.entries({ ...params, page: String(result.page - 1) }).filter((entry): entry is [string, string] => entry[1] !== undefined))}`}>Précédent</Link>}
       <span className="py-2 text-sm">Page {result.page} / {result.totalPages}</span>

@@ -20,6 +20,10 @@ export async function updateDrop(id: number, _state: UpdateDropState, formData: 
   const content = formData.get('content')
   const category = formData.get('category')
   const imageUrl = formData.get('imageUrl')
+  const latValue = formData.get('lat')
+  const lngValue = formData.get('lng')
+  const lat = typeof latValue === 'string' && latValue.trim() ? Number(latValue) : Number.NaN
+  const lng = typeof lngValue === 'string' && lngValue.trim() ? Number(lngValue) : Number.NaN
   const validCategories = ['note', 'photo', 'tip', 'riddle']
 
   if (typeof title !== 'string' || !title.trim() || typeof content !== 'string' || !content.trim()) {
@@ -27,6 +31,9 @@ export async function updateDrop(id: number, _state: UpdateDropState, formData: 
   }
   if (typeof category !== 'string' || !validCategories.includes(category)) {
     return { error: 'Choisis une catégorie valide.' }
+  }
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+    return { error: 'Choisis une latitude et une longitude valides sur la carte.' }
   }
   if (category === 'photo' && (typeof imageUrl !== 'string' || !imageUrl.trim())) {
     return { error: 'Ajoute l’URL de la photo pour cette catégorie.' }
@@ -38,6 +45,8 @@ export async function updateDrop(id: number, _state: UpdateDropState, formData: 
       content: content.trim(),
       category,
       imageUrl: typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null,
+      lat,
+      lng,
     }, token)
 
     if (!res.ok) {
@@ -118,7 +127,9 @@ export async function createDrop(_state: CreateDropState, formData: FormData): P
   if (typeof category !== 'string' || !categories.includes(category as typeof categories[number])) {
     return { error: 'Choisis une catégorie valide.' }
   }
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { error: 'Renseigne une latitude et une longitude valides.' }
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+    return { error: 'Choisis une latitude et une longitude valides sur la carte.' }
+  }
   if (category === 'photo' && (typeof imageUrl !== 'string' || !imageUrl.trim())) {
     return { error: 'Ajoute l’URL de la photo pour cette catégorie.' }
   }

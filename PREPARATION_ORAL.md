@@ -4,17 +4,17 @@ Le support demande de présenter une démo, d'expliquer un flux du parcours util
 
 ## Présentation en 30 secondes
 
-> Drops est une application Next.js où l'on peut se connecter, publier et consulter des posts géolocalisés, les modifier, les aimer et les commenter. Les pages serveur chargent les données avec l'API. Les formulaires passent par des actions serveur. Une seule connexion WebSocket alimente la présence et les mises à jour en direct. Leaflet 1.9.4 est installé pour la suite, mais la carte n'est pas encore codée.
+> Drops est une application Next.js où l'on peut se connecter, publier et consulter des posts géolocalisés, les modifier, les aimer et les commenter. Les pages serveur chargent les données avec l'API. Les formulaires passent par des actions serveur. Une seule connexion WebSocket alimente la présence et les mises à jour en direct. Leaflet 1.9.4 affiche les drops et sert à choisir ou déplacer leur position.
 
 ## Démo courte
 
 1. Montrer `/login`, se connecter et expliquer que la session est gardée dans un cookie `httpOnly`.
-2. Montrer `/drops` : liste, recherche, filtres, likes et création d'un drop.
-3. Ouvrir `/drops/[id]` : contenu, présence, commentaires et modification si le drop appartient à l'utilisateur.
-4. Montrer le profil et le changement d'avatar.
+2. Montrer `/drops` : liste, recherche, filtres, likes et carte. Survoler une carte pour mettre son marqueur en avant ; cliquer un marqueur pour retrouver la carte dans la liste.
+3. Créer un drop en cliquant la carte du formulaire ; ouvrir `/drops/[id]` pour voir sa position, puis modifier le drop et déplacer son repère.
+4. Montrer la présence et les commentaires du détail, puis le profil et le changement d'avatar.
 5. Si possible, ouvrir le même drop dans deux sessions pour montrer présence, likes ou commentaires en direct.
 
-Ne présente pas la carte comme une fonctionnalité terminée : le formulaire sait saisir des coordonnées et utiliser la géolocalisation du navigateur, mais il n'y a pas encore de carte Leaflet.
+La sélection de position fonctionne sans limite côté interface. Attention : le contrat actuel de l'API Railway rejette encore les points situés à plus de 3 km du département MMI ; retirer cette règle nécessite une modification du backend.
 
 ## Un flux complet : envoyer un commentaire
 
@@ -50,9 +50,11 @@ Exemples : `CreateDropForm` → `createDrop`, `CommentForm` → `createComment`,
 
 ## Sujet tiré au sort : carte
 
-> Pour l'instant, la carte n'est pas implémentée. Leaflet 1.9.4 et ses types sont installés, mais la liste et les coordonnées du formulaire ne sont pas encore reliées à Leaflet. La suite prévue est un composant client chargé sans rendu serveur, une carte créée une seule fois puis détruite avec `map.remove()`, et un `activeId` partagé entre la liste et les marqueurs. Leaflet attend `[latitude, longitude]`.
+> Les cartes sont dans des composants client chargés sans rendu serveur, car Leaflet utilise le DOM. La liste et la carte partagent `activeId` : survol ou focus met le marqueur en avant ; clic sur un marqueur sélectionne le drop et fait défiler jusqu'à sa carte. À la création, un clic pose le repère. À la modification, on le déplace et le formulaire envoie les coordonnées `lat` et `lng` ensemble. Leaflet attend l'ordre `[latitude, longitude]`.
 
-Le support demande aussi une carte de sélection dans le formulaire et une carte sur le détail et la modification du drop. Ne prétends pas que ces éléments sont déjà faits.
+La page détail affiche également la position du drop. L'attribution OpenStreetMap est visible. À signaler : le front accepte une position partout, mais l'API distante garde encore sa validation à 3 km autour de MMI.
+
+À montrer : `src/app/drops/page.tsx` → `src/app/drops/drops-explorer.tsx` → `src/components/map/drops-map.tsx` → `src/components/map/drops-map-view.tsx`. Pour choisir ou déplacer le point : `src/components/map/location-picker-map.tsx` et `src/components/map/location-picker-view.tsx`, puis l'action `createDrop` ou `updateDrop`.
 
 ## Web Worker : ce qu'il faut répondre
 
