@@ -1,9 +1,10 @@
-import { Suspense } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import { notFound, redirect } from 'next/navigation'
 import { apiGet, ApiError } from '@/lib/api/client'
-import { getSession } from '@/lib/session'
-import type { Category, CommentPage, Drop } from '@/lib/api/types'
+import { requireSession } from '@/lib/session'
+import { getCategories } from '@/lib/data/categories'
+import type { CommentPage, Drop } from '@/lib/api/types'
 import { Badge } from '@/components/ui/badge'
 import { PresenceWidget } from '@/components/presence-widget'
 import { LiveCommentCount } from '@/components/live-comment-count'
@@ -15,12 +16,11 @@ type Props = {
   params: Promise<{ id: string }>
   searchParams: Promise<{ commentsPage?: string }>
 }
+const dropDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' })
 
-// Affiche un état de chargement pendant la récupération du post et de ses commentaires.
+// Le fichier loading.tsx affiche le squelette pendant la récupération du post.
 export default function DropPage(props: Props) {
-  return <Suspense fallback={<main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 text-muted-foreground">Chargement du drop…</main>}>
-    <DropDetails {...props} />
-  </Suspense>
+  return <DropDetails {...props} />
 }
 
 // Charge le post, sa catégorie et ses commentaires à partir de son identifiant.
@@ -30,19 +30,25 @@ async function DropDetails({ params, searchParams }: Props) {
 
   const requestedPage = Number(query.commentsPage ?? 0)
   const commentsPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
-  const token = await getSession()
+  const token = await requireSession()
   const commentsQuery = new URLSearchParams({ page: String(commentsPage), pageSize: '20' })
-  const [drop, categories] = await Promise.all([
+  const [drop, categories, firstComments] = await Promise.all([
     apiGet<Drop>(`/drops/${id}`, token),
-    apiGet<Category[]>('/categories', token),
+    getCategories(token),
+    apiGet<CommentPage>(`/drops/${id}/comments?${commentsQuery}`, token),
   ]).catch(error => {
+    if (error instanceof ApiError && error.status === 401) redirect('/login')
     if (error instanceof ApiError && error.status === 404) notFound()
     throw error
   })
-  let comments = await apiGet<CommentPage>(`/drops/${id}/comments?${commentsQuery}`, token)
+  let comments = firstComments
   if (!query.commentsPage && comments.totalPages > 1) {
     const lastPage = new URLSearchParams({ page: String(comments.totalPages), pageSize: '20' })
-    comments = await apiGet<CommentPage>(`/drops/${id}/comments?${lastPage}`, token)
+    comments = await apiGet<CommentPage>(`/drops/${id}/comments?${lastPage}`, token).catch(error => {
+      if (error instanceof ApiError && error.status === 401) redirect('/login')
+      if (error instanceof ApiError && error.status === 404) notFound()
+      throw error
+    })
   }
   const category = categories.find(item => item.id === drop.category)?.label ?? drop.category
 
@@ -52,7 +58,7 @@ async function DropDetails({ params, searchParams }: Props) {
       <div className="mb-4 flex items-center justify-between gap-3">
         <Badge>{category}</Badge>
         <time className="text-sm text-muted-foreground">
-          {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(drop.createdAt))}
+          {dropDate.format(new Date(drop.createdAt))}
         </time>
       </div>
       <h1 className="mb-3 text-3xl font-bold">{drop.title}</h1>
@@ -64,7 +70,7 @@ async function DropDetails({ params, searchParams }: Props) {
       ) : (
         <>
           {drop.content && <p className="whitespace-pre-wrap leading-7 text-foreground/90">{drop.content}</p>}
-          {drop.imageUrl && <img src={drop.imageUrl} alt="" className="mt-5 h-full w-full rounded-lg object-cover" />}
+          {drop.imageUrl && <Image src={drop.imageUrl} alt="" width={1200} height={800} unoptimized loading="lazy" sizes="(max-width: 768px) 100vw, 720px" className="mt-5 h-auto max-h-[70vh] w-full rounded-lg object-cover" />}
         </>
       )}
       <div className="mt-6 flex items-center justify-between border-t border-border pt-5">

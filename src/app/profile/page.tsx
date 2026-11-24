@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { ApiError, apiGet } from '@/lib/api/client'
 import type { PrivateUser } from '@/lib/api/types'
 import { requireSession } from '@/lib/session'
@@ -14,7 +15,7 @@ export default async function ProfilePage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">
-      <a href="/drops" className="text-sm text-muted-foreground transition hover:text-primary">← Retour aux drops</a>
+      <Link href="/drops" className="text-sm text-muted-foreground transition hover:text-primary">← Retour aux drops</Link>
       <section className="mt-5 rounded-2xl border border-white/10 bg-card/80 p-6 shadow-xl shadow-black/15 sm:p-8">
         <span className="text-sm font-medium text-primary">Mon compte</span>
         <h1 className="mt-2 text-3xl font-bold">Mon profil</h1>

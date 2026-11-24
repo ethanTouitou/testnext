@@ -80,6 +80,8 @@ export async function createComment(id: number, _state: CreateCommentState, form
 
 // Supprime un post avec le token de session et actualise les pages concernées.
 export async function deleteDrop(id: number, _state: DeleteDropState, _formData: FormData): Promise<DeleteDropState> {
+  void _state
+  void _formData
   const token = await getSession()
   if (!token) return { error: 'Connecte-toi pour supprimer un drop.' }
 

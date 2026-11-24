@@ -1,4 +1,6 @@
 // Présente l'application et guide directement vers la connexion ou les drops.
+import Link from 'next/link'
+
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 items-center px-5 py-16 sm:py-24">
@@ -15,8 +17,8 @@ export default function Home() {
             Des messages, des photos et des recommandations à découvrir et à partager avec la communauté.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="/login" className="rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90">Se connecter</a>
-            <a href="/drops" className="rounded-xl border border-border bg-card px-5 py-3 font-semibold transition hover:border-primary/50 hover:bg-accent">Explorer les drops</a>
+            <Link href="/login" className="rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90">Se connecter</Link>
+            <Link href="/drops" className="rounded-xl border border-border bg-card px-5 py-3 font-semibold transition hover:border-primary/50 hover:bg-accent">Explorer les drops</Link>
           </div>
         </section>
         <aside aria-label="Aperçu d'un drop" className="relative mx-auto w-full max-w-md">

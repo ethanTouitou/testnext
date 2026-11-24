@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { retain, subscribe } from '@/lib/realtime'
 import type { PresenceUser } from '@/hooks/use-presence'
 
@@ -43,7 +44,7 @@ export function OnlinePresence() {
           return (
             <span key={user.id} title={user.displayName} className="flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-primary/20 text-[10px] font-semibold text-primary">
               {user.avatarUrl
-                ? <img src={user.avatarUrl} alt="" className="size-full object-cover" />
+                ? <Image src={user.avatarUrl} alt="" width={32} height={32} unoptimized loading="lazy" className="size-full object-cover" />
                 : initials || user.username.slice(0, 2).toUpperCase()}
             </span>
           )

@@ -1,6 +1,7 @@
 'use client'
 
 import { usePresence } from '@/hooks/use-presence'
+import Image from 'next/image'
 
 // Affiche les avatars et les initiales des personnes sur le même drop.
 export function PresenceWidget({ dropId }: { dropId: number }) {
@@ -16,7 +17,7 @@ export function PresenceWidget({ dropId }: { dropId: number }) {
           return (
             <span key={user.id} title={user.displayName} className="flex size-9 items-center justify-center overflow-hidden rounded-full border-2 border-card bg-primary/20 text-xs font-semibold text-primary">
               {user.avatarUrl
-                ? <img src={user.avatarUrl} alt="" className="size-full object-cover" />
+                ? <Image src={user.avatarUrl} alt="" width={36} height={36} unoptimized loading="lazy" className="size-full object-cover" />
                 : initials || user.username.slice(0, 2).toUpperCase()}
             </span>
           )

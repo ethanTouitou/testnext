@@ -15,6 +15,7 @@ export async function POST() {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
     })
     const data = await response.json().catch(() => null) as { url?: unknown; error?: unknown } | null
 

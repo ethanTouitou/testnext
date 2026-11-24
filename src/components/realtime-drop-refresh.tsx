@@ -9,7 +9,11 @@ export function RealtimeDropRefresh() {
   const router = useRouter()
 
   useEffect(() => {
-    const refresh = () => router.refresh()
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined
+    const refresh = () => {
+      clearTimeout(refreshTimer)
+      refreshTimer = setTimeout(() => router.refresh(), 100)
+    }
     const stopCreated = subscribe('drop:created', refresh)
     const stopDeleted = subscribe('drop:deleted', refresh)
     const release = retain()
@@ -17,6 +21,7 @@ export function RealtimeDropRefresh() {
     return () => {
       stopCreated()
       stopDeleted()
+      clearTimeout(refreshTimer)
       release()
     }
   }, [router])

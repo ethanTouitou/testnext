@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import type { Comment, CommentPage } from '@/lib/api/types'
 import { retain, subscribe } from '@/lib/realtime'
 import { CommentForm } from './comment-form'
@@ -45,7 +46,7 @@ export function LiveComments({ dropId, initial }: { dropId: number; initial: Com
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-xs font-semibold text-primary">
                       {comment.author.avatarUrl
-                        ? <img src={comment.author.avatarUrl} alt="" className="size-full object-cover" />
+                        ? <Image src={comment.author.avatarUrl} alt="" width={32} height={32} unoptimized loading="lazy" className="size-full object-cover" />
                         : initials || comment.author.username.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="truncate text-sm font-medium">{comment.author.displayName}</span>

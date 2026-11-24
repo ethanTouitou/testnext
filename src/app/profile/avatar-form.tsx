@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import Image from 'next/image'
 import { updateAvatar } from '@/lib/actions/profile'
 import type { AvatarState } from '@/lib/actions/profile'
 
@@ -21,7 +22,7 @@ export function AvatarForm({ displayName, username, avatarUrl: initialAvatarUrl 
     <form action={action} className="grid gap-5 sm:grid-cols-[auto_1fr] sm:items-center">
       <div className="flex size-24 items-center justify-center overflow-hidden rounded-full border border-primary/30 bg-primary/15 text-2xl font-semibold text-primary">
         {avatarUrl && !imageError
-          ? <img src={avatarUrl} alt={`Aperçu de l’avatar de ${displayName}`} onError={() => setImageError(true)} className="size-full object-cover" />
+          ? <Image src={avatarUrl} alt={`Aperçu de l’avatar de ${displayName}`} width={96} height={96} unoptimized onError={() => setImageError(true)} loading="lazy" className="size-full object-cover" />
           : initials || username.slice(0, 2).toUpperCase()}
       </div>
       <div className="grid gap-2">

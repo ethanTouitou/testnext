@@ -1,5 +1,7 @@
 import 'server-only';
 
+const API_TIMEOUT_MS = 10_000;
+
 // Ajoute le statut HTTP à une erreur pour que les pages puissent la traiter.
 export class ApiError extends Error {
     constructor(message: string, public status: number) {
@@ -17,6 +19,7 @@ export async function apiGet<T>(path: string, token?: string) {
     try {
         res = await fetch(`${baseUrl}${path}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
+            signal: AbortSignal.timeout(API_TIMEOUT_MS),
         });
     } catch {
         throw new Error("Impossible de joindre le serveur. Vérifie ta connexion et réessaie.");
@@ -49,6 +52,7 @@ export async function apiPost<T>(path: string, data: T, token?: string) {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(data),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
 }
 
@@ -64,6 +68,7 @@ export async function apiPatch<T>(path: string, data: T, token: string) {
             Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(data),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
 }
 
@@ -75,5 +80,6 @@ export async function apiDelete(path: string, token: string) {
     return fetch(`${baseUrl}${path}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
 }
