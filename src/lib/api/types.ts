@@ -8,6 +8,8 @@ export type DropPage = S['DropPage'];
 export type Category = S['Category'];
 export type AuthResponse = S['AuthResponse'];
 export type PrivateUser = S['PrivateUser'];
+export type Profile = S['Profile']
 export type LikeState = S['LikeState'];
 export type Comment = S['Comment'];
 export type CommentPage = S['CommentPage'];
+

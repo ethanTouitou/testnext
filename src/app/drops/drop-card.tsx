@@ -34,7 +34,15 @@ export function DropCard({ drop, category, active, onActivate }: {
       {drop.content && <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{drop.content}</p>}
       {drop.imageUrl && <Image src={drop.imageUrl} alt="" width={1200} height={800} unoptimized loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" className="mt-4 h-auto max-h-72 w-full rounded-lg object-cover" />}
       <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-        <span className="text-sm text-muted-foreground">Par {drop.author.displayName}</span>
+        <span className="text-sm text-muted-foreground">Par{' '}
+          <Link
+            href={`/profile/${encodeURIComponent(drop.author.username)}`}
+            onClick={event => event.stopPropagation()}
+            className="font-medium text-foreground transition hover:text-primary hover:underline"
+          >
+            {drop.author.displayName}
+          </Link>
+        </span>
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => onActivate(drop.id)} className="text-xs text-primary transition hover:underline">Voir sur la carte</button>
           <Link href={`/drops/${drop.id}#commentaires`} className="text-sm text-muted-foreground transition hover:text-primary">

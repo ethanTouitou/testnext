@@ -63,7 +63,11 @@ async function DropDetails({ params, searchParams }: Props) {
         </time>
       </div>
       <h1 className="mb-3 text-3xl font-bold">{drop.title}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">Par {drop.author.displayName}</p>
+      <p className="mb-6 text-sm text-muted-foreground">Par{' '}
+        <Link href={`/profile/${encodeURIComponent(drop.author.username)}`} className="font-medium text-foreground transition hover:text-primary hover:underline">
+          {drop.author.displayName}
+        </Link>
+      </p>
       <PresenceWidget key={drop.id} dropId={drop.id} />
       {drop.isMine && <EditDropForm drop={drop} />}
       {drop.locked && !drop.openedByMe ? (
