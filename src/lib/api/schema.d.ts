@@ -49,7 +49,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -530,7 +530,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -660,7 +660,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -708,7 +708,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -792,7 +792,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -815,7 +815,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -910,7 +910,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -933,7 +933,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1049,7 +1049,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1097,7 +1097,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1194,7 +1194,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1238,7 +1238,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1340,11 +1340,34 @@ export interface paths {
                         "application/json": components["schemas"]["Category"][];
                     };
                 };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
                 /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1403,7 +1426,9 @@ export interface paths {
         };
         /**
          * Lister les drops
-         * @description Liste paginée des drops, du plus récent au plus ancien par défaut. Les drops masqués sont exclus. Le token est facultatif : il alimente `likedByMe` et `isMine`.
+         * @description Liste paginée des drops, du plus récent au plus ancien par défaut. Les drops masqués sont exclus. Token requis : il alimente `likedByMe` et `isMine`.
+         *
+         *     **Bloc 2.** `near=lat,lng` (avec `radius` en mètres, 1000 par défaut) filtre les drops proches et ajoute `distanceM` ; `sort=distance` (défaut avec `near`) trie du plus proche au plus loin. `bbox=minLng,minLat,maxLng,maxLat` filtre par rectangle (**longitude d'abord**, ordre GeoJSON ; Leaflet utilise `[lat, lng]`) et autorise `pageSize` jusqu'à 200. `near` et `bbox` s'excluent.
          */
         get: {
             parameters: {
@@ -1413,7 +1438,10 @@ export interface paths {
                     q?: string;
                     category?: "note" | "photo" | "tip" | "riddle";
                     author?: string;
-                    sort?: "recent" | "popular";
+                    sort?: "recent" | "popular" | "distance";
+                    near?: string;
+                    radius?: number;
+                    bbox?: string;
                     delay?: string;
                     fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
                 };
@@ -1440,10 +1468,8 @@ export interface paths {
                          *           "imageUrl": null,
                          *           "location": {
                          *             "lat": 47.49561,
-                         *             "lng": 6.80544,
-                         *             "precision": "exact"
+                         *             "lng": 6.80544
                          *           },
-                         *           "locked": false,
                          *           "hidden": false,
                          *           "author": {
                          *             "id": 3,
@@ -1452,10 +1478,10 @@ export interface paths {
                          *             "avatarUrl": null
                          *           },
                          *           "likesCount": 4,
+                         *           "dislikesCount": 1,
                          *           "commentsCount": 2,
-                         *           "opensCount": 0,
                          *           "likedByMe": false,
-                         *           "openedByMe": false,
+                         *           "dislikedByMe": false,
                          *           "isMine": false,
                          *           "createdAt": "2026-11-16T09:12:00.000Z",
                          *           "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -1474,7 +1500,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1522,7 +1548,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1569,7 +1595,7 @@ export interface paths {
          * Créer un drop
          * @description Dépose un drop à la position `lat`/`lng`. Les coordonnées doivent être des nombres (pas des chaînes). Une `photo` exige `imageUrl`.
          *
-         *     **Pourquoi une zone ?** Le point doit se trouver à 3 km au plus du département MMI. C'est un choix éthique : cela empêche de déposer un drop près de son domicile, ce qui révélerait où l'on habite. Toutes les erreurs de coordonnées (type, bornes, zone) sont rangées sous la clé `location`.
+         *     Aucune restriction de zone : le point peut se trouver n'importe où. Toutes les erreurs de coordonnées (type, bornes) sont rangées sous la clé `location`.
          */
         post: {
             parameters: {
@@ -1599,7 +1625,7 @@ export interface paths {
                 201: {
                     headers: {
                         /** @description Chemin du drop créé, par exemple `/drops/42`. */
-                        Location?: unknown;
+                        Location?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1612,10 +1638,8 @@ export interface paths {
                          *       "imageUrl": null,
                          *       "location": {
                          *         "lat": 47.49561,
-                         *         "lng": 6.80544,
-                         *         "precision": "exact"
+                         *         "lng": 6.80544
                          *       },
-                         *       "locked": false,
                          *       "hidden": false,
                          *       "author": {
                          *         "id": 3,
@@ -1624,10 +1648,10 @@ export interface paths {
                          *         "avatarUrl": null
                          *       },
                          *       "likesCount": 4,
+                         *       "dislikesCount": 1,
                          *       "commentsCount": 2,
-                         *       "opensCount": 0,
                          *       "likedByMe": false,
-                         *       "openedByMe": false,
+                         *       "dislikedByMe": false,
                          *       "isMine": true,
                          *       "createdAt": "2026-11-16T09:12:00.000Z",
                          *       "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -1661,7 +1685,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1709,7 +1733,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1797,10 +1821,8 @@ export interface paths {
                          *       "imageUrl": null,
                          *       "location": {
                          *         "lat": 47.49561,
-                         *         "lng": 6.80544,
-                         *         "precision": "exact"
+                         *         "lng": 6.80544
                          *       },
-                         *       "locked": false,
                          *       "hidden": false,
                          *       "author": {
                          *         "id": 3,
@@ -1809,10 +1831,10 @@ export interface paths {
                          *         "avatarUrl": null
                          *       },
                          *       "likesCount": 4,
+                         *       "dislikesCount": 1,
                          *       "commentsCount": 2,
-                         *       "opensCount": 0,
                          *       "likedByMe": false,
-                         *       "openedByMe": false,
+                         *       "dislikedByMe": false,
                          *       "isMine": false,
                          *       "createdAt": "2026-11-16T09:12:00.000Z",
                          *       "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -1825,7 +1847,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1869,7 +1891,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -1915,7 +1937,7 @@ export interface paths {
         post?: never;
         /**
          * Supprimer un drop
-         * @description Réservé à l'auteur (token) ou à l'enseignant (`X-Admin-Key`). Supprime aussi les likes, commentaires, ouvertures et signalements du drop.
+         * @description Réservé à l'auteur (token) ou à l'enseignant (`X-Admin-Key`). Supprime aussi les likes, dislikes, commentaires et signalements du drop.
          */
         delete: {
             parameters: {
@@ -1944,7 +1966,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2009,7 +2031,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2055,7 +2077,7 @@ export interface paths {
         head?: never;
         /**
          * Modifier un drop
-         * @description Réservé à l'auteur. Au moins un champ parmi ceux de la création ; `lat` et `lng` vont ensemble. Les mêmes règles s'appliquent (zone, photo avec image).
+         * @description Réservé à l'auteur. Au moins un champ parmi ceux de la création ; `lat` et `lng` vont ensemble. Les mêmes règles s'appliquent (photo avec image).
          */
         patch: {
             parameters: {
@@ -2098,10 +2120,8 @@ export interface paths {
                          *       "imageUrl": null,
                          *       "location": {
                          *         "lat": 47.49561,
-                         *         "lng": 6.80544,
-                         *         "precision": "exact"
+                         *         "lng": 6.80544
                          *       },
-                         *       "locked": false,
                          *       "hidden": false,
                          *       "author": {
                          *         "id": 3,
@@ -2110,10 +2130,10 @@ export interface paths {
                          *         "avatarUrl": null
                          *       },
                          *       "likesCount": 4,
+                         *       "dislikesCount": 1,
                          *       "commentsCount": 2,
-                         *       "opensCount": 0,
                          *       "likedByMe": false,
-                         *       "openedByMe": false,
+                         *       "dislikedByMe": false,
                          *       "isMine": true,
                          *       "createdAt": "2026-11-16T09:12:00.000Z",
                          *       "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -2147,7 +2167,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2237,7 +2257,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2292,7 +2312,7 @@ export interface paths {
         put?: never;
         /**
          * Liker un drop
-         * @description Idempotent : liker deux fois ne compte qu’une fois. Liker son propre drop est autorisé.
+         * @description Idempotent : liker deux fois ne compte qu’une fois. Liker son propre drop est autorisé. Retire un éventuel dislike : un utilisateur a au plus une réaction par drop.
          */
         post: {
             parameters: {
@@ -2317,7 +2337,9 @@ export interface paths {
                         /**
                          * @example {
                          *       "liked": true,
-                         *       "likesCount": 5
+                         *       "disliked": false,
+                         *       "likesCount": 5,
+                         *       "dislikesCount": 1
                          *     }
                          */
                         "application/json": components["schemas"]["LikeState"];
@@ -2327,7 +2349,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2371,7 +2393,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2440,7 +2462,9 @@ export interface paths {
                         /**
                          * @example {
                          *       "liked": false,
-                         *       "likesCount": 4
+                         *       "disliked": false,
+                         *       "likesCount": 4,
+                         *       "dislikesCount": 1
                          *     }
                          */
                         "application/json": components["schemas"]["LikeState"];
@@ -2450,7 +2474,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2494,7 +2518,271 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/drops/{id}/dislike": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disliker un drop
+         * @description Idempotent. Retire un éventuel like : un utilisateur a au plus une réaction par drop.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": false,
+                         *       "disliked": true,
+                         *       "likesCount": 4,
+                         *       "dislikesCount": 2
+                         *     }
+                         */
+                        "application/json": components["schemas"]["LikeState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /**
+         * Retirer son dislike
+         * @description Idempotent : retirer un dislike absent renvoie le même résultat.
+         */
+        delete: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": false,
+                         *       "disliked": false,
+                         *       "likesCount": 4,
+                         *       "dislikesCount": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["LikeState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2550,7 +2838,7 @@ export interface paths {
         };
         /**
          * Commentaires d'un drop
-         * @description Page de commentaires, du plus ancien au plus récent. 404 si le drop n'existe pas ou est masqué pour l'appelant.
+         * @description Page de commentaires de premier niveau, du plus ancien au plus récent, chacun avec `repliesCount`. Les réponses se lisent avec `GET /comments/{id}/replies`. Un commentaire supprimé qui a des réponses reste dans la liste avec `deleted: true`. 404 si le drop n'existe pas ou est masqué pour l'appelant.
          */
         get: {
             parameters: {
@@ -2580,6 +2868,7 @@ export interface paths {
                          *         {
                          *           "id": 7,
                          *           "dropId": 42,
+                         *           "parentId": null,
                          *           "content": "Validé !",
                          *           "author": {
                          *             "id": 5,
@@ -2588,6 +2877,12 @@ export interface paths {
                          *             "avatarUrl": null
                          *           },
                          *           "isMine": false,
+                         *           "deleted": false,
+                         *           "repliesCount": 1,
+                         *           "likesCount": 3,
+                         *           "dislikesCount": 0,
+                         *           "likedByMe": false,
+                         *           "dislikedByMe": false,
                          *           "createdAt": "2026-11-16T10:02:00.000Z"
                          *         }
                          *       ],
@@ -2604,7 +2899,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2673,7 +2968,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2718,7 +3013,7 @@ export interface paths {
         put?: never;
         /**
          * Commenter un drop
-         * @description Ajoute un commentaire de 1 à 500 caractères.
+         * @description Ajoute un commentaire de 1 à 500 caractères. Avec `parentId`, ajoute une réponse : si `parentId` désigne déjà une réponse, la nouvelle est rattachée au commentaire racine (`parentId` de la réponse = racine). 422 sous la clé `parentId` si ce commentaire n'existe pas sur ce drop.
          */
         post: {
             parameters: {
@@ -2736,6 +3031,8 @@ export interface paths {
                 content: {
                     "application/json": {
                         content: string;
+                        /** @description Commentaire auquel répondre. Si c'est une réponse, la nouvelle réponse est rattachée au commentaire racine. */
+                        parentId?: number;
                     };
                 };
             };
@@ -2750,6 +3047,7 @@ export interface paths {
                          * @example {
                          *       "id": 7,
                          *       "dropId": 42,
+                         *       "parentId": null,
                          *       "content": "Validé !",
                          *       "author": {
                          *         "id": 5,
@@ -2758,6 +3056,12 @@ export interface paths {
                          *         "avatarUrl": null
                          *       },
                          *       "isMine": true,
+                         *       "deleted": false,
+                         *       "repliesCount": 1,
+                         *       "likesCount": 3,
+                         *       "dislikesCount": 0,
+                         *       "likedByMe": false,
+                         *       "dislikedByMe": false,
                          *       "createdAt": "2026-11-16T10:02:00.000Z"
                          *     }
                          */
@@ -2789,7 +3093,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2858,7 +3162,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -2906,6 +3210,195 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/comments/{id}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Réponses à un commentaire
+         * @description Page de réponses à un commentaire de premier niveau, de la plus ancienne à la plus récente. Répondre à une réponse la rattache au même commentaire racine : il n'y a qu'un niveau de réponses. 404 si le commentaire n'existe pas, s'il est lui-même une réponse ou si son drop est masqué.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Page de réponses. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "items": [
+                         *         {
+                         *           "id": 8,
+                         *           "dropId": 42,
+                         *           "parentId": 7,
+                         *           "content": "Validé !",
+                         *           "author": {
+                         *             "id": 5,
+                         *             "username": "yanis",
+                         *             "displayName": "Yanis",
+                         *             "avatarUrl": null
+                         *           },
+                         *           "isMine": false,
+                         *           "deleted": false,
+                         *           "repliesCount": 0,
+                         *           "likesCount": 0,
+                         *           "dislikesCount": 0,
+                         *           "likedByMe": false,
+                         *           "dislikedByMe": false,
+                         *           "createdAt": "2026-11-16T10:02:00.000Z"
+                         *         }
+                         *       ],
+                         *       "page": 1,
+                         *       "pageSize": 20,
+                         *       "total": 1,
+                         *       "totalPages": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["CommentPage"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Corps ou paramètres invalides (`validation_failed`), détail dans `fields`. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 422,
+                         *         "code": "validation_failed",
+                         *         "message": "Le formulaire contient des erreurs.",
+                         *         "fields": {
+                         *           "title": [
+                         *             "Le titre doit faire au moins 3 caractères."
+                         *           ]
+                         *         },
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/comments/{id}": {
         parameters: {
             query?: never;
@@ -2918,7 +3411,7 @@ export interface paths {
         post?: never;
         /**
          * Supprimer un commentaire
-         * @description Réservé à l'auteur du commentaire.
+         * @description Réservé à l'auteur du commentaire. Un commentaire de premier niveau qui a des réponses est conservé comme « supprimé » (`deleted: true`, contenu vide, auteur anonymisé) ; sinon il disparaît. Une réponse disparaît toujours.
          */
         delete: {
             parameters: {
@@ -2945,7 +3438,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -3010,7 +3503,535 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/comments/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Liker un commentaire
+         * @description Idempotent. Retire un éventuel dislike : un utilisateur a au plus une réaction par commentaire. 404 sur un commentaire supprimé.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions du commentaire. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": true,
+                         *       "disliked": false,
+                         *       "likesCount": 3,
+                         *       "dislikesCount": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["CommentReactionState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /**
+         * Retirer son like d'un commentaire
+         * @description Idempotent : retirer un like absent renvoie le même résultat.
+         */
+        delete: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions du commentaire. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": false,
+                         *       "disliked": false,
+                         *       "likesCount": 3,
+                         *       "dislikesCount": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["CommentReactionState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/comments/{id}/dislike": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disliker un commentaire
+         * @description Idempotent. Retire un éventuel like : un utilisateur a au plus une réaction par commentaire. 404 sur un commentaire supprimé.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions du commentaire. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": false,
+                         *       "disliked": true,
+                         *       "likesCount": 3,
+                         *       "dislikesCount": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["CommentReactionState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /**
+         * Retirer son dislike d'un commentaire
+         * @description Idempotent : retirer un dislike absent renvoie le même résultat.
+         */
+        delete: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État des réactions du commentaire. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "liked": false,
+                         *       "disliked": false,
+                         *       "likesCount": 3,
+                         *       "dislikesCount": 1
+                         *     }
+                         */
+                        "application/json": components["schemas"]["CommentReactionState"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Ressource ou route inexistante (`not_found`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 404,
+                         *         "code": "not_found",
+                         *         "message": "Ressource introuvable.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -3134,7 +4155,7 @@ export interface paths {
                 401: {
                     headers: {
                         /** @description Toujours `Bearer`. */
-                        "WWW-Authenticate"?: unknown;
+                        "WWW-Authenticate"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -3224,7 +4245,7 @@ export interface paths {
                 429: {
                     headers: {
                         /** @description Secondes à attendre. */
-                        "Retry-After"?: unknown;
+                        "Retry-After"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -3463,10 +4484,8 @@ export interface paths {
                          *           "imageUrl": null,
                          *           "location": {
                          *             "lat": 47.49561,
-                         *             "lng": 6.80544,
-                         *             "precision": "exact"
+                         *             "lng": 6.80544
                          *           },
-                         *           "locked": false,
                          *           "hidden": true,
                          *           "author": {
                          *             "id": 3,
@@ -3475,10 +4494,10 @@ export interface paths {
                          *             "avatarUrl": null
                          *           },
                          *           "likesCount": 4,
+                         *           "dislikesCount": 1,
                          *           "commentsCount": 2,
-                         *           "opensCount": 0,
                          *           "likedByMe": false,
-                         *           "openedByMe": false,
+                         *           "dislikedByMe": false,
                          *           "isMine": false,
                          *           "createdAt": "2026-11-16T09:12:00.000Z",
                          *           "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -3599,10 +4618,8 @@ export interface paths {
                          *       "imageUrl": null,
                          *       "location": {
                          *         "lat": 47.49561,
-                         *         "lng": 6.80544,
-                         *         "precision": "exact"
+                         *         "lng": 6.80544
                          *       },
-                         *       "locked": false,
                          *       "hidden": false,
                          *       "author": {
                          *         "id": 3,
@@ -3611,10 +4628,10 @@ export interface paths {
                          *         "avatarUrl": null
                          *       },
                          *       "likesCount": 4,
+                         *       "dislikesCount": 1,
                          *       "commentsCount": 2,
-                         *       "opensCount": 0,
                          *       "likedByMe": false,
-                         *       "openedByMe": false,
+                         *       "dislikedByMe": false,
                          *       "isMine": false,
                          *       "createdAt": "2026-11-16T09:12:00.000Z",
                          *       "updatedAt": "2026-11-16T09:12:00.000Z"
@@ -3688,6 +4705,667 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/realtime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Connexions temps réel
+         * @description Nombre de connexions WebSocket, connexions par utilisateur (trié par nombre décroissant : une application qui ouvre une socket à chaque rendu se repère ici) et lecteurs par drop. Le champ `simulated` liste, sans les mélanger aux vraies connexions, les utilisateurs simulés en ligne et les drops qu'ils regardent.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header: {
+                    "X-Admin-Key": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description État du temps réel. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "connections": 23,
+                         *       "byUser": [
+                         *         {
+                         *           "user": {
+                         *             "id": 3,
+                         *             "username": "lea",
+                         *             "displayName": "Léa",
+                         *             "avatarUrl": null
+                         *           },
+                         *           "connections": 4
+                         *         }
+                         *       ],
+                         *       "viewers": [
+                         *         {
+                         *           "dropId": 42,
+                         *           "count": 2
+                         *         }
+                         *       ],
+                         *       "simulated": {
+                         *         "online": [
+                         *           {
+                         *             "id": 3,
+                         *             "username": "lea",
+                         *             "displayName": "Léa",
+                         *             "avatarUrl": null
+                         *           }
+                         *         ],
+                         *         "viewing": [
+                         *           {
+                         *             "user": {
+                         *               "id": 3,
+                         *               "username": "lea",
+                         *               "displayName": "Léa",
+                         *               "avatarUrl": null
+                         *             },
+                         *             "dropId": 42
+                         *           }
+                         *         ]
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["AdminRealtime"];
+                    };
+                };
+                /** @description Authentifié mais non autorisé (`forbidden`). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 403,
+                         *         "code": "forbidden",
+                         *         "message": "Vous n'avez pas le droit d'effectuer cette action.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/realtime/disconnect-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Déconnecter tout le monde
+         * @description Ferme toutes les connexions WebSocket avec le code 4011 (`admin_disconnect`), pour tester la reconnexion des applications.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header: {
+                    "X-Admin-Key": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Nombre de connexions fermées. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "disconnected": 23
+                         *     }
+                         */
+                        "application/json": {
+                            disconnected: number;
+                        };
+                    };
+                };
+                /** @description Authentifié mais non autorisé (`forbidden`). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 403,
+                         *         "code": "forbidden",
+                         *         "message": "Vous n'avez pas le droit d'effectuer cette action.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/simulator": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Démarrer ou arrêter le simulateur
+         * @description Le simulateur agit au nom d'utilisateurs d'exemple (likes, commentaires, ouvertures, créations de drops) pour qu'un élève qui travaille seul voie des événements en direct. Tout ce qu'il crée disparaît avec `POST /admin/reset`.
+         *
+         *     `presence` (vrai par défaut) fait aussi apparaître 3 utilisateurs d'exemple en ligne et venir regarder des drops, dont, une fois sur deux, un drop regardé par un vrai utilisateur. Arrêter le simulateur, ou passer `presence` à `false`, les fait tous partir.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header: {
+                    "X-Admin-Key": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        enabled: boolean;
+                        intervalSeconds?: number;
+                        presence?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description État du simulateur. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "enabled": true,
+                         *       "intervalSeconds": 20,
+                         *       "presence": true
+                         *     }
+                         */
+                        "application/json": {
+                            enabled: boolean;
+                            intervalSeconds: number;
+                            presence: boolean;
+                        };
+                    };
+                };
+                /** @description JSON illisible (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 400,
+                         *         "code": "bad_request",
+                         *         "message": "Requête illisible.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Authentifié mais non autorisé (`forbidden`). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 403,
+                         *         "code": "forbidden",
+                         *         "message": "Vous n'avez pas le droit d'effectuer cette action.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Corps ou paramètres invalides (`validation_failed`), détail dans `fields`. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 422,
+                         *         "code": "validation_failed",
+                         *         "message": "Le formulaire contient des erreurs.",
+                         *         "fields": {
+                         *           "title": [
+                         *             "Le titre doit faire au moins 3 caractères."
+                         *           ]
+                         *         },
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/realtime/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Obtenir un ticket WebSocket
+         * @description Émet un ticket aléatoire, **à usage unique**, valable `WS_TICKET_TTL_SECONDS` (30 s par défaut), à passer dans l'URL du WebSocket : `wss://<domaine>/ws?ticket=wst_…`.
+         *
+         *     **Pourquoi un ticket ?** Le JWT ne doit jamais apparaître dans l'URL d'un WebSocket, qui finit souvent dans des journaux. Seule la route Next côté serveur demande le ticket avec le JWT ; le navigateur ne voit que le ticket.
+         *
+         *     Voir la description du tag « Temps réel » pour le protocole.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ticket émis. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "ticket": "wst_Zk3m9v0Qe1m2n3o4p5q6r7s8t9u0v1w2",
+                         *       "expiresAt": "2026-11-23T08:00:30.000Z",
+                         *       "url": "wss://drops-api.example.com/ws?ticket=wst_Zk3m9v0Qe1m2n3o4p5q6r7s8t9u0v1w2"
+                         *     }
+                         */
+                        "application/json": components["schemas"]["RealtimeTicket"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dataset/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Jeu de données des bibliothèques
+         * @description Jeu de données ouvert (environ 15 000 bibliothèques de France) pour travailler dans un Web Worker : filtrer, regrouper et afficher des milliers de points sans bloquer l'interface. **Pas de pagination** : recevoir le jeu complet fait partie de l'exercice. Réponse compressée en gzip, mise en cache 24 h (`Cache-Control: public, max-age=86400`).
+         *
+         *     Les valeurs sont **volontairement brutes** : le serveur ne corrige rien, c'est le travail du Worker.
+         *
+         *     Source réelle : Les bibliothèques des collectivités territoriales : adresses et données d’activité (Ministère de la Culture), Licence Ouverte / Open Licence. **Aucune anomalie n'a été ajoutée** : les valeurs sont celles de la source, non corrigées.
+         *
+         *     **Anomalies réelles de ce jeu** (15704 points) : 166 points sans coordonnées (`lat` et `lng` valent `null`), 15538 points dont les coordonnées sont des **chaînes** de caractères (`"46.77"`) au lieu de nombres, 166 points inutilisables au total, 1 sans code postal, 14 sans département. Certains points sont en outre-mer (Nouvelle-Calédonie…) : ils sont valides mais loin de la métropole.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    format?: "json" | "geojson";
+                    delay?: string;
+                    fail?: "400" | "401" | "403" | "404" | "409" | "422" | "429" | "500" | "503";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Jeu de données complet (`FeatureCollection` avec `?format=geojson`). */
+                200: {
+                    headers: {
+                        /** @description `public, max-age=86400` */
+                        "Cache-Control"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "source": {
+                         *         "name": "Les bibliothèques des collectivités territoriales : adresses et données d’activité (Ministère de la Culture)",
+                         *         "url": "https://www.data.gouv.fr/datasets/adresses-des-bibliotheques-publiques-2",
+                         *         "license": "Licence Ouverte / Open Licence",
+                         *         "retrievedAt": "2026-11-16T01:17:11.010Z",
+                         *         "synthetic": false
+                         *       },
+                         *       "count": 15704,
+                         *       "points": [
+                         *         {
+                         *           "id": "LI3873",
+                         *           "name": "Médiathèque Le Poire Sur Vie",
+                         *           "city": "Le Poiré-sur-Vie",
+                         *           "postcode": "85170",
+                         *           "department": "Vendée",
+                         *           "lat": "46.769255",
+                         *           "lng": "-1.505685"
+                         *         }
+                         *       ]
+                         *     }
+                         */
+                        "application/json": components["schemas"]["Dataset"] | components["schemas"]["DatasetGeoJson"];
+                    };
+                };
+                /** @description Token absent, invalide, expiré ou révoqué (`unauthorized`, `invalid_token`, `token_expired`, `token_revoked`, `invalid_credentials`). */
+                401: {
+                    headers: {
+                        /** @description Toujours `Bearer`. */
+                        "WWW-Authenticate"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 401,
+                         *         "code": "unauthorized",
+                         *         "message": "Authentification requise.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Corps ou paramètres invalides (`validation_failed`), détail dans `fields`. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 422,
+                         *         "code": "validation_failed",
+                         *         "message": "Le formulaire contient des erreurs.",
+                         *         "fields": {
+                         *           "title": [
+                         *             "Le titre doit faire au moins 3 caractères."
+                         *           ]
+                         *         },
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Trop de requêtes (`rate_limited`), voir `Retry-After`. */
+                429: {
+                    headers: {
+                        /** @description Secondes à attendre. */
+                        "Retry-After"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 429,
+                         *         "code": "rate_limited",
+                         *         "message": "Trop de requêtes, réessayez dans quelques instants.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Erreur inattendue (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        /**
+                         * @example {
+                         *       "error": {
+                         *         "status": 500,
+                         *         "code": "internal_error",
+                         *         "message": "Une erreur est survenue, réessayez plus tard.",
+                         *         "fields": {},
+                         *         "requestId": "req_8f2c1a3b",
+                         *         "simulated": false
+                         *       }
+                         *     }
+                         */
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3776,20 +5454,19 @@ export interface components {
             location: {
                 lat: number;
                 lng: number;
-                /** @enum {string} */
-                precision: "exact" | "approx";
             };
-            locked: boolean;
             hidden: boolean;
             author: components["schemas"]["PublicUser"];
             likesCount: number;
+            dislikesCount: number;
             commentsCount: number;
-            opensCount: number;
             likedByMe: boolean;
-            openedByMe: boolean;
+            dislikedByMe: boolean;
             isMine: boolean;
             createdAt: string;
             updatedAt: string;
+            /** @description Distance en mètres. Présent uniquement quand la requête utilise `near`. */
+            distanceM?: number;
         };
         DropPage: {
             items: components["schemas"]["Drop"][];
@@ -3800,14 +5477,26 @@ export interface components {
         };
         LikeState: {
             liked: boolean;
+            disliked: boolean;
             likesCount: number;
+            dislikesCount: number;
         };
         Comment: {
             id: number;
             dropId: number;
+            /** @description Commentaire racine auquel celui-ci répond, `null` pour un commentaire de premier niveau. */
+            parentId: number | null;
+            /** @description Vide si le commentaire a été supprimé (`deleted: true`). */
             content: string;
             author: components["schemas"]["PublicUser"];
             isMine: boolean;
+            /** @description Commentaire supprimé qui garde ses réponses : contenu vide, auteur anonymisé. */
+            deleted: boolean;
+            repliesCount: number;
+            likesCount: number;
+            dislikesCount: number;
+            likedByMe: boolean;
+            dislikedByMe: boolean;
             createdAt: string;
         };
         CommentPage: {
@@ -3816,6 +5505,12 @@ export interface components {
             pageSize: number;
             total: number;
             totalPages: number;
+        };
+        CommentReactionState: {
+            liked: boolean;
+            disliked: boolean;
+            likesCount: number;
+            dislikesCount: number;
         };
         ResetResult: {
             users: number;
@@ -3832,6 +5527,73 @@ export interface components {
                 createdAt: string;
                 user: components["schemas"]["PublicUser"];
             }[];
+        };
+        AdminRealtime: {
+            connections: number;
+            byUser: {
+                user: components["schemas"]["PublicUser"];
+                connections: number;
+            }[];
+            viewers: {
+                dropId: number;
+                count: number;
+            }[];
+            simulated: {
+                online: components["schemas"]["PublicUser"][];
+                viewing: {
+                    user: components["schemas"]["PublicUser"];
+                    dropId: number;
+                }[];
+            };
+        };
+        RealtimeTicket: {
+            ticket: string;
+            expiresAt: string;
+            url: string;
+        };
+        DatasetPoint: {
+            id: string;
+            name: string | null;
+            city: string | null;
+            postcode: string | null;
+            department: string | null;
+            lat: number | string | null;
+            lng: number | string | null;
+        };
+        Dataset: {
+            source: {
+                name: string;
+                url: string;
+                license: string;
+                retrievedAt: string;
+                synthetic: boolean;
+            };
+            count: number;
+            points: components["schemas"]["DatasetPoint"][];
+        };
+        DatasetGeoJson: {
+            /** @enum {string} */
+            type: "FeatureCollection";
+            features: {
+                /** @enum {string} */
+                type: "Feature";
+                geometry: {
+                    /** @enum {string} */
+                    type: "Point";
+                    coordinates: number[];
+                };
+                properties: {
+                    [key: string]: unknown;
+                };
+            }[];
+            skipped: number;
+            source: {
+                name: string;
+                url: string;
+                license: string;
+                retrievedAt: string;
+                synthetic: boolean;
+            };
         };
     };
     responses: never;
