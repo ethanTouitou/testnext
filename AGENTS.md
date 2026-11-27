@@ -56,5 +56,10 @@
 
 - Avant de terminer une modification, vérifie le typage (`npx tsc --noEmit`) et ESLint (`npm run lint`) quand ils sont pertinents.
 - Pour vérifier un chargement ou une erreur, l'API de cours accepte selon la route des paramètres de simulation comme `?delay=3000`, `?fail=422` ou `?fail=500`.
-- **Ne crée pas de commit sans demande explicite.** Avant un commit demandé, vérifie la branche, `git status` et le diff ; n'ajoute que les fichiers liés à la tâche.
-- Utilise un message court qui décrit le changement, par exemple `feat: ajouter la présence en direct` ou `fix: afficher l'erreur de connexion`.
+- Pour chaque évolution ou correction, travaille sur une branche dédiée plutôt que directement sur `main`. Réutilise la branche de travail déjà prévue pour la tâche si elle existe ; sinon, pars de `main` à jour et crée une branche nommée clairement, par exemple `feat/presence-en-direct` ou `fix/erreur-connexion`.
+- Fais des commits régulièrement, après chaque étape cohérente et vérifiable. Garde chaque commit petit et centré sur un seul changement ; ne regroupe pas tout le travail dans un gros commit final.
+- Avant chaque commit, vérifie la branche, `git status` et le diff. N'ajoute que les fichiers liés à la tâche et ne touche pas aux changements préexistants de l'utilisateur.
+- Utilise un message court, descriptif et cohérent, avec un préfixe comme `feat:`, `fix:`, `docs:` ou `refactor:`, par exemple `feat: ajouter la présence en direct` ou `fix: afficher l'erreur de connexion`.
+- Quand le travail est terminé et les vérifications pertinentes passent, intègre la branche de travail dans `main` avec un merge propre. Vérifie la branche cible et l'état Git avant le merge, puis confirme que le résultat est propre. S'il y a des conflits, résous-les sans perdre le travail existant et vérifie à nouveau le résultat.
+- Ne pousse pas de branche vers un dépôt distant sans demande explicite ou procédure du projet qui l'exige. N'écrase jamais l'historique avec `reset --hard`, `push --force` ou une opération équivalente.
+- Pour une question, une explication ou une modification de documentation sans changement de code demandé, ne crée pas automatiquement de commit ni de branche.
