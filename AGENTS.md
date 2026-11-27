@@ -21,6 +21,7 @@
 - Les appels authentifiés partent du serveur et transmettent le token Bearer. N'ajoute pas de cache partagé à une requête authentifiée et ne retire pas son token pour la mettre en cache.
 - Utilise `API_URL` côté serveur. Ne place aucun secret dans une variable `NEXT_PUBLIC_*`.
 - L'API du projet exige actuellement le token pour `/categories` : garde-le dans cet appel même si le schéma local indique le contraire.
+- Pour toute nouvelle fonctionnalité API, vérifie le contrat publié (`/openapi.json` ou `/contract.md`) avant de coder et régénère `src/lib/api/schema.d.ts` avec `npm run generate:api` si le contrat a changé. Le contrat publié prime sur les anciennes notes de ce fichier.
 
 ## Temps réel
 
@@ -44,7 +45,7 @@
 - À la création, un clic sur la carte place le repère. À la modification, le repère peut être déplacé ; les coordonnées restent aussi éditables dans les champs Latitude/Longitude. Envoie toujours `lat` et `lng` ensemble au `PATCH`.
 - Leaflet attend les coordonnées `[latitude, longitude]`. Vérifie l'ordre si tu manipules du GeoJSON ou un `bbox`, qui place souvent la longitude en premier.
 - Affiche l'attribution des tuiles et respecte la politique d'utilisation du fournisseur choisi.
-- Le front-end ne limite pas la carte à une zone géographique. Le contrat de l'API Railway impose actuellement une limite de 3 km autour du département MMI : elle doit être changée côté API pour que les créations et modifications partout dans le monde soient acceptées.
+- Le front-end et le contrat actuel de l'API acceptent les coordonnées partout dans le monde. Ne rajoute pas de limite géographique sans nouvelle exigence confirmée dans le contrat publié.
 
 ## Web Worker
 
