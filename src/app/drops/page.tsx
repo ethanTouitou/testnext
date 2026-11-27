@@ -47,8 +47,10 @@ async function DropsContent({ searchParams }: Props) {
         <button className="rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-foreground">Se déconnecter</button>
       </form>
     </header>
-    <div className="mb-5"><SearchBox query={params.q} /></div>
     <CreateDropForm />
+    <section className="mb-7" aria-label="Rechercher des drops">
+      <SearchBox query={params.q} />
+    </section>
     <Categories categories={categories} selected={params.category} query={params.q} sort={params.sort} />
     <form className="my-6 flex items-center gap-3">
       <label htmlFor="sort" className="text-sm text-muted-foreground">Trier par</label>

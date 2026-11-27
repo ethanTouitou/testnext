@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate:api": "openapi-typescript https://drops-api-production.up.railway.app/openapi.json --output src/lib/api/schema.ts"
+    "generate:api": "npx openapi-typescript https://drops-api-production.up.railway.app/openapi.json --output src/lib/api/schema.d.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

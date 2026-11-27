@@ -21,17 +21,17 @@ export function EditDropForm({ drop }: { drop: Drop }) {
       setLatitude(String(drop.location.lat))
       setLongitude(String(drop.location.lng))
       setEditing(true)
-    }} className="mb-6 text-sm font-medium text-primary hover:underline">
-      Modifier mon post
+    }} className="mb-0 text-sm font-medium text-primary hover:underline">
+      Modifier le drop
     </button>
   }
 
-  return <form action={action} className="mb-6 grid gap-3 rounded-2xl border border-white/10 bg-background/60 p-4">
+  return <form action={action} className="mb-0 grid gap-3 rounded-2xl border border-white/10 bg-background/60 p-4">
     <label className="grid gap-1 text-sm">Titre
-      <input name="title" required minLength={3} defaultValue={drop.title} className="rounded-xl border border-input px-4 py-3" />
+      <input name="title" required minLength={3} maxLength={80} defaultValue={drop.title} className="rounded-xl border border-input px-4 py-3" />
     </label>
     <label className="grid gap-1 text-sm">Contenu
-      <textarea name="content" required defaultValue={drop.content ?? ''} className="min-h-24 rounded-xl border border-input px-4 py-3" />
+      <textarea name="content" required maxLength={1000} defaultValue={drop.content ?? ''} className="min-h-24 rounded-xl border border-input px-4 py-3" />
     </label>
     <label className="grid gap-1 text-sm">Catégorie
       <select name="category" defaultValue={drop.category} className="rounded-xl border border-input px-4 py-3">
@@ -42,7 +42,7 @@ export function EditDropForm({ drop }: { drop: Drop }) {
       </select>
     </label>
     <label className="grid gap-1 text-sm">URL de l’image
-      <input name="imageUrl" type="url" defaultValue={drop.imageUrl ?? ''} className="rounded-xl border border-input px-4 py-3" />
+      <input name="imageUrl" type="url" maxLength={500} defaultValue={drop.imageUrl ?? ''} className="rounded-xl border border-input px-4 py-3" />
     </label>
     <div className="grid gap-2">
       <p className="text-sm font-medium">Position du drop</p>

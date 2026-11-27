@@ -4,8 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Drop } from '@/lib/api/types'
 import { LiveCommentCount } from '@/components/live-comment-count'
-import { DeleteDropButton } from './drop-forms'
-import { LikeButton } from './like-button'
+import { ReactionButtons } from '@/components/reaction-buttons'
 
 const dropDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' })
 
@@ -33,7 +32,7 @@ export function DropCard({ drop, category, active, onActivate }: {
       </h2>
       {drop.content && <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{drop.content}</p>}
       {drop.imageUrl && <Image src={drop.imageUrl} alt="" width={1200} height={800} unoptimized loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" className="mt-4 h-auto max-h-72 w-full rounded-lg object-cover" />}
-      <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <span className="text-sm text-muted-foreground">Par{' '}
           <Link
             href={`/profile/${encodeURIComponent(drop.author.username)}`}
@@ -43,13 +42,12 @@ export function DropCard({ drop, category, active, onActivate }: {
             {drop.author.displayName}
           </Link>
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <button type="button" onClick={() => onActivate(drop.id)} className="text-xs text-primary transition hover:underline">Voir sur la carte</button>
           <Link href={`/drops/${drop.id}#commentaires`} className="text-sm text-muted-foreground transition hover:text-primary">
             <LiveCommentCount dropId={drop.id} initialCount={drop.commentsCount} /> 💬
           </Link>
-          {drop.isMine && <DeleteDropButton id={drop.id} />}
-          <LikeButton id={drop.id} count={drop.likesCount} liked={drop.likedByMe} />
+          <ReactionButtons id={drop.id} subject="drop" likesCount={drop.likesCount} dislikesCount={drop.dislikesCount} liked={drop.likedByMe} disliked={drop.dislikedByMe} compact />
         </div>
       </div>
     </article>
